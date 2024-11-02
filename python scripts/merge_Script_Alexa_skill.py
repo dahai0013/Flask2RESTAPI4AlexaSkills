@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 # Load credentials from JSON file
 with open('SDWAN_Director_credentials.json', 'r') as f:
     credentials = json.load(f)
+
 API_URL = credentials['API_url']
+
 
 # Function to get the VSTS token
 def get_vsts_token():
