@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Elements on Director</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 75%;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .partner-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .partner-table th, .partner-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        .partner-table th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">List Elements</h1>
+    <table>
+        <tr>
+            <td style="width: 25%;">Request</td>
+            <td>Response</td>
+        </tr>
+        <tr>
+            <td>
+                <label>List Partner</label>
+                <button onclick="listPartner()">List Partner</button>
+            </td>
+            <td id="listPartnerResponse"></td>
+        </tr>
+        <tr>
+            <td>
+                <label>List POP</label>
+                <button onclick="listPop()">List POP</button>
+            </td>
+            <td id="listPopResponse"></td>
+        </tr>
+        <tr>
+            <td>Future request</td>
+            <td></td>
+        </tr>
+    </table>
+
+    <div id="partnerListContainer" style="display: none; margin-top: 20px;">
+        <h2>Partner List</h2>
+        <table class="partner-table" id="partnerList">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Admin Account</th>
+                    <th>Contract Number</th>
+                    <th>Description</th>
+                    <th>Management MTLS</th>
+                </tr>
+            </thead>
+            <tbody id="partnerListBody">
+                <!-- Partner rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popListContainer" style="display: none; margin-top: 20px;">
+        <h2>POP List</h2>
+        <table class="partner-table" id="popList">
+            <thead>
+                <tr>
+                    <th>POP Name</th>
+                    <th>Location</th>
+                    <th>Capacity</th>
+                </tr>
+            </thead>
+            <tbody id="popListBody">
+                <!-- POP rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function clearOutputs() {
+            document.getElementById('listPartnerResponse').textContent = '';
+            document.getElementById('listPopResponse').textContent = '';
+            document.getElementById('partnerListBody').innerHTML = '';
+            document.getElementById('popListBody').innerHTML = '';
+            document.getElementById('partnerListContainer').style.display = 'none';
+            document.getElementById('popListContainer').style.display = 'none';
+        }
+
+        function listPartner() {
+            clearOutputs(); // Clear previous outputs
+            fetch('http://127.0.0.1:5000/list_partner')
+                .then(response => response.json())
+                .then(data => {
+                    const partnerListBody = document.getElementById('partnerListBody');
+                    partnerListBody.innerHTML = ''; // Clear any existing content
+
+                    document.getElementById('partnerListContainer').style.display = 'block';
+
+                    data.forEach(partner => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${partner.name}</td>
+                            <td>${partner.contact_name}</td>
+                            <td>${partner.email}</td>
+                            <td>${partner.phone}</td>
+                            <td>${partner.address}</td>
+                            <td>${partner.admin_account}</td>
+                            <td>${partner.contract_number}</td>
+                            <td>${partner.description || 'N/A'}</td>
+                            <td>${partner.management_mtls ? 'Yes' : 'No'}</td>
+                        `;
+                        partnerListBody.appendChild(row);
+                    });
+
+                    document.getElementById('listPartnerResponse').textContent = '';
+                })
+                .catch(error => {
+                    document.getElementById('listPartnerResponse').textContent = 'Error: ' + error;
+                    document.getElementById('partnerListContainer').style.display = 'none';
+                });
+        }
+
+        function listPop() {
+            clearOutputs(); // Clear previous outputs
+            fetch('http://127.0.0.1:5000/list_pop')
+                .then(response => response.json())
+                .then(data => {
+                    const popListBody = document.getElementById('popListBody');
+                    popListBody.innerHTML = '';
+
+                    document.getElementById('popListContainer').style.display = 'block';
+
+                    data.forEach(pop => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${pop.name}</td>
+                            <td>${pop.location}</td>
+                            <td>${pop.capacity}</td>
+                        `;
+                        popListBody.appendChild(row);
+                    });
+
+                    document.getElementById('listPopResponse').textContent = '';
+                })
+                .catch(error => {
+                    document.getElementById('listPopResponse').textContent = 'Error: ' + error;
+                    document.getElementById('popListContainer').style.display = 'none';
+                });
+        }
+    </script>
+</body>
+</html>

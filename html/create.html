@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Partner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 60%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        /* Set column widths */
+        th:nth-child(1), td:nth-child(1) {
+            width: 40%;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 60%;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        label {
+            flex: 1;
+            margin-right: 10px;
+        }
+        input[type="text"], input[type="password"] {
+            flex: 2;
+            padding: 5px;
+        }
+        input[type="checkbox"] {
+            margin-left: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #createPartnerResponse {
+            margin-top: 20px;
+            white-space: pre-wrap; /* Preserve formatting */
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Create Partner</h1>
+
+    <table>
+        <tr>
+            <th>Request</th>
+            <th>Response</th>
+        </tr>
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Partner Name</label>
+                    <input type="text" id="partnerName" value="JLK-flask5">
+                </div>
+                <div class="form-group">
+                    <label>Admin Account</label>
+                    <input type="text" id="adminAccount" value="JLK-flask5@jlk-dot.com">
+                </div>
+                <div class="form-group">
+                    <label>Admin Password</label>
+                    <input type="password" id="adminPassword" value="adm1n_P@ssword">
+                </div>
+                <div class="form-group">
+                    <label>Contact Name</label>
+                    <input type="text" id="contactName" value="Jean-luc KRIKER">
+                </div>
+                <div class="form-group">
+                    <label>Contract Number</label>
+                    <input type="text" id="contractNumber" value="10005">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="description" value="Created with Flask server">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" id="partnerEmail" value="jean-luc.kriker@ekinops.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="partnerPhone" value="+441234567890">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="partnerAddress" value="Ekinops, Newport, Wales">
+                </div>
+                <div class="form-group">
+                    <label>Management MTLS</label>
+                    <input type="checkbox" id="managementMtls" checked>
+                </div>
+                <button onclick="createPartner()">Create Partner</button>
+            </td>
+            <td id="createPartnerResponse"></td>
+        </tr>
+    </table>
+
+    <script>
+        // Define the base URL for the Flask application
+        const FLASK_URL = 'http://127.0.0.1:5000';
+
+        function createPartner() {
+            const partnerData = {
+                name: document.getElementById('partnerName').value,
+                admin_account: document.getElementById('adminAccount').value,
+                admin_password: document.getElementById('adminPassword').value,
+                contact_name: document.getElementById('contactName').value,
+                contract_number: document.getElementById('contractNumber').value,
+                description: document.getElementById('description').value,
+                email: document.getElementById('partnerEmail').value,
+                phone: document.getElementById('partnerPhone').value,
+                address: document.getElementById('partnerAddress').value,
+                management_mtls: document.getElementById('managementMtls').checked
+            };
+
+            fetch('http://127.0.0.1:5000/create_partner', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(partnerData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('createPartnerResponse').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('createPartnerResponse').textContent = 'Error: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>

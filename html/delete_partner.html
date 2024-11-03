@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Partner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 60%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        /* Set column widths */
+        th:nth-child(1), td:nth-child(1) {
+            width: 40%;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 60%;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        label {
+            flex: 1;
+            margin-right: 10px;
+        }
+        input[type="text"], input[type="password"] {
+            flex: 2;
+            padding: 5px;
+        }
+        input[type="checkbox"] {
+            margin-left: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #deletePartnerResponse {
+            margin-top: 20px;
+            white-space: pre-wrap; /* Preserve formatting */
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Delete Partner</h1>
+
+    <table>
+        <tr>
+            <th>Request</th>
+            <th>Response</th>
+        </tr>
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Partner Name</label>
+                    <input type="text" id="partnerName" value="JLK-flask5">
+                </div>
+                <button onclick="deletePartner()">Delete Partner</button>
+            </td>
+            <td id="deletePartnerResponse"></td>
+        </tr>
+    </table>
+
+    <script>
+        // Define the base URL for the Flask application
+        const FLASK_URL = 'http://127.0.0.1:5000';
+
+        function deletePartner() {
+            const partnerName = document.getElementById('partnerName').value;
+
+            // Call the DELETE method using the partner name in the URL
+            fetch(`${FLASK_URL}/delete_partner/${partnerName}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('deletePartnerResponse').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('deletePartnerResponse').textContent = 'Error: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>
