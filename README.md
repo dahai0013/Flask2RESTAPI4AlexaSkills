@@ -4,20 +4,31 @@
 ## Getting Started
 
 This repository include many ways to access the Ekinops SD-WAN Director:
- 1- simple python file ( created by Postman )
- 2- simple webpage and python file
- 3- a flask script as a back end of the Alexa Skill
-
  
-    Phase 1-
-    Phase 2-
+    Part 1- simple python file ( created by Postman )
+    Part 2- simple webpage and python file
+    Part 3-  flask script as a back end of the Alexa Skill
  
 ## Prerequisites
  
   none
  
  
-## Phase 1
+## Part 1
  
     1-
     2-  
+    3-
+
+## Part 2
+ 
+    1-
+    2-  
+    3-
+
+## Part 3
+ 
+    1-
+    2-  
+    3-
+
