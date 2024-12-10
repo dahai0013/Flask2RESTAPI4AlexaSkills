@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 # Load credentials from JSON file
 with open('SDWAN_Director_credentials.json', 'r') as f:
     credentials = json.load(f)
-
 API_URL = credentials['API_url']
-
 
 # Function to get the VSTS token
 def get_vsts_token():
@@ -120,6 +118,128 @@ def create_partner():
         logger.error(f"An error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+# # Updated route for listing sites
+# @app.route('/list_site', methods=['GET'])
+# def list_site():
+#     #print("Rentering the list_site def")
+#     try:
+#         # Get partner and customer from query parameters
+#         partner = request.args.get('partner', 'Pre_Sales')  # Default to 'Pre_Sales'
+#         customer = request.args.get('customer', 'EKI_customer')  # Default to 'EKI_customer'
+#
+#         headers = get_headers()
+#         # Use the partner and customer variables in the API URL
+#         response = requests.get(f"{API_URL}{partner}/{customer}/site", headers=headers)
+#         data = response.json()
+#         #print("Response from API :", json.dumps(data, indent=4))
+#
+#         # Prepare list of device.serials
+#         device_serials = []
+#         for item in data:  # Iterating through the list of devices
+#             device = item.get('device', {})
+#             serial = device.get('serial', 'Unknown')
+#             device_serials.append(serial)
+#         print ( "device_serials ;",device_serials )
+#
+#         sites_info = []
+#         for item in data:  # Iterating through the list of devices
+#             device = item.get('site', {})
+#             name = device.get('name', 'Unknown')
+#             sites_info.append(name)
+#         print ( "sites_info ;",sites_info )
+#
+#         #return jsonify(data)
+#         # Return only the device.serial values
+#         result = {'device_serials': device_serials, 'sites_info': sites_info}
+#         return jsonify(result)
+#
+#     except Exception as e:
+#         logger.error(f"Error in /list_site: {str(e)}")
+#         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/list_site', methods=['GET'])
+def list_site():
+    # print("Entering the list_site function")
+    try:
+        # Get partner and customer from query parameters
+        partner = request.args.get('partner', 'Pre_Sales')  # Default to 'Pre_Sales'
+        customer = request.args.get('customer', 'EKI_customer')  # Default to 'EKI_customer'
+
+        headers = get_headers()
+        # Use the partner and customer variables in the API URL
+        response = requests.get(f"{API_URL}{partner}/{customer}/site", headers=headers)
+        data = response.json()
+        # print("Response from API :", json.dumps(data, indent=4))
+
+        # Prepare list of site information
+        sites_info = []
+        for item in data:  # Iterating through the list of sites
+            site = item.get('site', {})
+            name = site.get('name', 'Unknown')
+            location = site.get('location', 'Unknown')
+            device = item.get('device', {})
+            serial = device.get('serial', 'Unknown')
+
+            # Append site details and device serial in required order
+            sites_info.append({
+                'site_name': name,
+                'site_location': location,
+                'device_serial': serial
+            })
+
+        # Count the total number of sites
+        total_sites = len(data)
+
+        # Prepare the final result with the total count, site info, and full data
+        result = {
+            'total_sites': total_sites,
+            'sites_info': sites_info,
+            #'full_data': data
+        }
+        #
+        # # Prepare the final result with the full JSON data as well
+        # #result = {'sites_info': sites_info, 'full_data': data}
+        # result = {'sites_info': sites_info}
+        return jsonify(result)
+
+    except Exception as e:
+        logger.error(f"Error in /list_site: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/create_site', methods=['POST'])
+def create_site():
+    site_data = request.json
+    #print(json.dumps(site_data, indent=4))
+    #print ( f"{API_URL}Pre_sales/EKI_customer/site")
+
+    try:
+        # POST the site date
+        logger.info("Sending site data to SDWAN Director API.")
+        headers = get_headers()
+        response = requests.post(f"{API_URL}Pre_sales/EKI_customer/site", headers=headers, json=[site_data])
+        logger.info("Response status code: %d", response.status_code)
+        logger.info("Response content: %s", response.text)  # Log the raw response content
+
+        # Check if the response from SDWAN Director is JSON
+        if response.headers.get('Content-Type') == 'application/json':
+            return jsonify(response.json()), response.status_code
+        else:
+            logger.error("Expected JSON but received: %s", response.text)
+            return jsonify({'error': 'Unexpected response format'}), 500
+
+    except requests.exceptions.HTTPError as http_err:
+        logger.error("HTTP error occurred: %s", http_err)
+        return jsonify({'error': f"HTTP error occurred: {http_err}"}), 500
+
+
+##############################################
+#
+#    Alexa configuration Part
+#
+##############################################
+
 # Alexa Skill LaunchRequest Handler
 @sb.request_handler(can_handle_func=is_request_type("LaunchRequest"))
 def launch_request_handler(handler_input: HandlerInput) -> Response:
@@ -142,7 +262,15 @@ def list_partner_intent_handler(handler_input: HandlerInput) -> Response:
 
 
 @sb.request_handler(can_handle_func=is_intent_name("ListPartnerNameIntent"))
-def list_partner_intent_handler(handler_input: HandlerInput) -> Response:
+def list_partner_name_intent_handler(handler_input: HandlerInput) -> Response:
+    # Print part of the JSON message receipt
+    #print(json.dumps(handler_input.request_envelope, indent=4))
+    # Print the JSON message receipt
+    # try:
+    #      print(json.dumps(vars(handler_input.request_envelope), indent=4))
+    # except Exception as e:
+    #      print(f"Can't print the JSON message: {e}")
+
     response = list_partner()  # Call the Flask function directly
     data = response.get_json()  # Extract JSON content
 
@@ -157,6 +285,17 @@ def list_partner_intent_handler(handler_input: HandlerInput) -> Response:
 
     return handler_input.response_builder.speak(speech_text).response
 
+# Catch-all intent handler for undefined intents
+@sb.request_handler(can_handle_func=lambda handler_input: True)
+def catch_all_intent_handler(handler_input: HandlerInput) -> Response:
+    speech_text = "This intent does not exist on the backend server."
+    return (
+        handler_input.response_builder
+        .speak(speech_text)
+        .set_card(SimpleCard("Error", speech_text))
+        .set_should_end_session(True)
+        .response
+    )
 
 # Intent handler for listing POPs
 @sb.request_handler(can_handle_func=is_intent_name("ListPOPIntent"))
@@ -190,8 +329,22 @@ def delete_partner_intent_handler(handler_input: HandlerInput) -> Response:
 @app.route('/alexa', methods=['POST'])
 def alexa_handler():
     logger.debug("Received request: %s", request.json)
-    response = sb.lambda_handler()(request.json, None)
+    # Extract the incoming Alexa request as a JSON object
+    #print("Rx msg from Alexa in /alexa:", json.dumps(request.json, indent=4))
+
+    # Extract intent type and name
+    request_json = request.json
+    request_type = request_json.get('request', {}).get('type', 'UnknownType')
+    intent_name = request_json.get('request', {}).get('intent', {}).get('name', 'UnknownIntent')
+
+    print(f"Intent Type: {request_type}")
+    if request_type == "IntentRequest":
+        print(f"Intent Name: {intent_name}")
+
+    # Process the request
+    response = sb.lambda_handler()(request_json, None)
     return jsonify(response)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
